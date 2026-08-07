@@ -20,6 +20,8 @@ interface AudioEngine {
 
     fun setSustain(enabled: Boolean)
 
+    fun setMasterVolume(volume: Float)
+
     fun release()
 }
 
@@ -28,6 +30,8 @@ class SimpleAudioEngine : AudioEngine {
     private val running = AtomicBoolean(true)
     @Volatile
     private var sustainEnabled = false
+    @Volatile
+    private var masterVolume = 0.8f
     private val audioTrack: AudioTrack
     private val audioThread: Thread
 
@@ -95,6 +99,10 @@ class SimpleAudioEngine : AudioEngine {
         }
     }
 
+    override fun setMasterVolume(volume: Float) {
+        masterVolume = volume.coerceIn(0f, 1f)
+    }
+
     override fun release() {
         if (!running.compareAndSet(true, false)) {
             return
@@ -125,7 +133,7 @@ class SimpleAudioEngine : AudioEngine {
                     }
                 }
                 buffer[index] = (
-                    mixedSample.coerceIn(-1.0, 1.0) * Short.MAX_VALUE * OUTPUT_LEVEL
+                    (mixedSample.coerceIn(-1.0, 1.0) * masterVolume) * Short.MAX_VALUE * OUTPUT_LEVEL
                     ).toInt().toShort()
             }
 
