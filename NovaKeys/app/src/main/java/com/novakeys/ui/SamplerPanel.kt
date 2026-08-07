@@ -1,5 +1,6 @@
 package com.novakeys.ui
 
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,13 +13,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.novakeys.sampler.SamplerViewModel
+import com.novakeys.sampler.SamplerViewModelFactory
 
 @Composable
 fun SamplerPanel(
-    viewModel: SamplerViewModel = viewModel(),
+    viewModel: SamplerViewModel = viewModel(
+        factory = SamplerViewModelFactory(LocalContext.current.applicationContext as Application),
+    ),
 ) {
     val state by viewModel.state.collectAsState()
 
