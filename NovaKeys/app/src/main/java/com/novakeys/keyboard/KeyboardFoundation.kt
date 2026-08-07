@@ -3,7 +3,7 @@ package com.novakeys.keyboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.novakeys.audio.AudioEngine
-import com.novakeys.audio.SimpleAudioEngine
+import com.novakeys.audio.SampleEngineAudioAdapter
 import com.novakeys.storage.AppStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -229,7 +229,7 @@ class KeyboardViewModelFactory(
         require(modelClass.isAssignableFrom(KeyboardViewModel::class.java)) {
             "Unsupported ViewModel type: ${modelClass.name}"
         }
-        return KeyboardViewModel(SimpleAudioEngine(), storage) as T
+        return KeyboardViewModel(SampleEngineAudioAdapter(), storage) as T
     }
 }
 
