@@ -78,6 +78,7 @@ class KeyboardViewModel(
 
     init {
         audioEngine.setSustain(mutableState.value.performance.sustainEnabled)
+        audioEngine.setMasterVolume(0.8f)
     }
 
     fun noteOn(midiNote: Int) {
@@ -141,6 +142,10 @@ class KeyboardViewModel(
     fun setSustainEnabled(enabled: Boolean) {
         audioEngine.setSustain(enabled)
         updatePerformance { copy(sustainEnabled = enabled) }
+    }
+
+    fun setMasterVolume(volume: Float) {
+        audioEngine.setMasterVolume(volume)
     }
 
     fun saveRegistration(slot: Int) {
