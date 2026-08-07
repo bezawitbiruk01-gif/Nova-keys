@@ -12,7 +12,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,8 +46,14 @@ fun HomeScreen(
         )
         Text(
             text = stringResource(R.string.home_message),
-            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp),
+            modifier = Modifier.padding(top = 8.dp),
             style = MaterialTheme.typography.bodyLarge,
+        )
+        Text(
+            text = stringResource(R.string.developer_name),
+            modifier = Modifier.padding(top = 4.dp, bottom = 20.dp),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
         )
         PerformanceControls(
             state = keyboardState,
@@ -196,6 +201,12 @@ private fun BaseScreen(
             text = message,
             modifier = Modifier.padding(top = 12.dp),
             style = MaterialTheme.typography.bodyLarge,
+        )
+        Text(
+            text = stringResource(R.string.developer_name),
+            modifier = Modifier.padding(top = 16.dp),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
         )
     }
 }
