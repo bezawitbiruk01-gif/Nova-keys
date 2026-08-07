@@ -1,0 +1,1 @@
+- [Android SDK availability](android-sdk-availability.md) — the Replit workspace may lack Android SDK tools; verify local SDK presence before claiming an Android compile.

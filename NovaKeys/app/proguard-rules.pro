@@ -1,0 +1,1 @@
+# NovaKeys keeps release shrinking disabled in the base project.
