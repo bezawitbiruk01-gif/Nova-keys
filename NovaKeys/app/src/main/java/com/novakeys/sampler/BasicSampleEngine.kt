@@ -56,7 +56,6 @@ class BasicSampleEngine : SampleEngine, Closeable {
                     .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
                     .build(),
             )
-            .setTransferMode(AudioTrack.MODE_STREAM)
             .setBufferSizeInBytes(minBufferSize.coerceAtLeast(sampleRate / 10))
             .build()
         audioTrack.play()
