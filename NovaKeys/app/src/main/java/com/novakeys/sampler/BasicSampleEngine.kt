@@ -21,6 +21,7 @@ class BasicSampleEngine : SampleEngine, Closeable {
         val frequencyHz: Double,
         var phase: Double = 0.0,
         var release: Boolean = false,
+        var held: Boolean = true,
         var amplitude: Double = (velocity / 127.0) * 0.35,
     )
 
@@ -32,6 +33,10 @@ class BasicSampleEngine : SampleEngine, Closeable {
     override val state: StateFlow<SamplerState> = stateFlow.asStateFlow()
 
     private var polyphonyLimit: Int = 128
+    @Volatile
+    private var sustainEnabled: Boolean = false
+    @Volatile
+    private var masterVolume: Float = 0.8f
     private val sampleRate = 44_100
     private val audioTrack: AudioTrack
     private val audioThread: Thread
@@ -56,6 +61,7 @@ class BasicSampleEngine : SampleEngine, Closeable {
                     .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
                     .build(),
             )
+            .setTransferMode(AudioTrack.MODE_STREAM)
             .setBufferSizeInBytes(minBufferSize.coerceAtLeast(sampleRate / 10))
             .build()
         audioTrack.play()
@@ -94,7 +100,12 @@ class BasicSampleEngine : SampleEngine, Closeable {
 
     override fun noteOff(midiNote: Int) {
         synchronized(lock) {
-            voices[midiNote]?.release = true
+            voices[midiNote]?.let { voice ->
+                voice.held = false
+                if (!sustainEnabled) {
+                    voice.release = true
+                }
+            }
             updateState()
         }
     }
@@ -107,6 +118,20 @@ class BasicSampleEngine : SampleEngine, Closeable {
             }
             updateState()
         }
+    }
+
+    override fun setSustain(enabled: Boolean) {
+        sustainEnabled = enabled
+        synchronized(lock) {
+            if (!enabled) {
+                voices.values.filter { !it.held }.forEach { it.release = true }
+            }
+            updateState()
+        }
+    }
+
+    override fun setMasterVolume(volume: Float) {
+        masterVolume = volume.coerceIn(0f, 1f)
     }
 
     override fun release() {
@@ -152,7 +177,9 @@ class BasicSampleEngine : SampleEngine, Closeable {
                         if (voice.phase > 2.0 * PI) voice.phase -= 2.0 * PI
                     }
                 }
-                buffer[index] = (sample.coerceIn(-1.0, 1.0) * Short.MAX_VALUE).roundToInt().toShort()
+                buffer[index] = (
+                    (sample.coerceIn(-1.0, 1.0) * masterVolume) * Short.MAX_VALUE
+                ).roundToInt().toShort()
             }
 
             updateState()
