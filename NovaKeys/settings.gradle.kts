@@ -16,5 +16,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NovaKeys"
+rootProject.name = "BIRUK MUSIC KEYBOARD"
 include(":app")
