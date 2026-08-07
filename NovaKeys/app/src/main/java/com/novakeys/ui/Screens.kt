@@ -28,6 +28,7 @@ import com.novakeys.keyboard.KeyboardState
 import com.novakeys.keyboard.KeyboardViewModel
 import com.novakeys.keyboard.KeyboardViewModelFactory
 import com.novakeys.mixer.MixerViewModel
+import com.novakeys.sampler.SamplerPanel
 import com.novakeys.storage.AppStorage
 
 @Composable
@@ -206,11 +207,14 @@ private fun RowScope.RegistrationButtonRow(
 
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier) {
-    BaseScreen(
-        modifier = modifier,
-        title = stringResource(R.string.library_title),
-        message = stringResource(R.string.library_message),
-    )
+    Column(modifier = modifier.fillMaxSize()) {
+        BaseScreen(
+            modifier = Modifier.weight(1f),
+            title = stringResource(R.string.library_title),
+            message = stringResource(R.string.library_message),
+        )
+        SamplerPanel()
+    }
 }
 
 @Composable
