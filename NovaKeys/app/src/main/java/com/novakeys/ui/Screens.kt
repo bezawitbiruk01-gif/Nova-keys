@@ -2,9 +2,11 @@ package com.novakeys.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Button
@@ -23,6 +25,7 @@ import com.novakeys.keyboard.KeyboardSurface
 import com.novakeys.keyboard.KeyboardState
 import com.novakeys.keyboard.KeyboardViewModel
 import com.novakeys.keyboard.KeyboardViewModelFactory
+import com.novakeys.mixer.MixerViewModel
 import com.novakeys.storage.AppStorage
 
 @Composable
@@ -33,6 +36,7 @@ fun HomeScreen(
     val keyboardViewModel: KeyboardViewModel = viewModel(
         factory = KeyboardViewModelFactory(storage),
     )
+    val mixerViewModel: MixerViewModel = viewModel()
     val keyboardState by keyboardViewModel.state.collectAsStateWithLifecycle()
 
     Column(
@@ -65,6 +69,7 @@ fun HomeScreen(
             onSaveRegistration = keyboardViewModel::saveRegistration,
             onLoadRegistration = keyboardViewModel::loadRegistration,
         )
+        MixerPanel(viewModel = mixerViewModel)
         KeyboardSurface(
             state = keyboardState,
             onNoteOn = keyboardViewModel::noteOn,
@@ -144,21 +149,51 @@ private fun PerformanceControls(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            (1..3).forEach { slot ->
-                Button(
-                    onClick = { onLoadRegistration(slot) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("Load $slot")
-                }
-                Button(
-                    onClick = { onSaveRegistration(slot) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("Save $slot")
-                }
-            }
+            RegistrationButtonRow(
+                label = "Load 1",
+                onClick = { onLoadRegistration(1) },
+                modifier = Modifier.weight(1f),
+            )
+            RegistrationButtonRow(
+                label = "Save 1",
+                onClick = { onSaveRegistration(1) },
+                modifier = Modifier.weight(1f),
+            )
+            RegistrationButtonRow(
+                label = "Load 2",
+                onClick = { onLoadRegistration(2) },
+                modifier = Modifier.weight(1f),
+            )
+            RegistrationButtonRow(
+                label = "Save 2",
+                onClick = { onSaveRegistration(2) },
+                modifier = Modifier.weight(1f),
+            )
+            RegistrationButtonRow(
+                label = "Load 3",
+                onClick = { onLoadRegistration(3) },
+                modifier = Modifier.weight(1f),
+            )
+            RegistrationButtonRow(
+                label = "Save 3",
+                onClick = { onSaveRegistration(3) },
+                modifier = Modifier.weight(1f),
+            )
         }
+    }
+}
+
+@Composable
+private fun RowScope.RegistrationButtonRow(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+    ) {
+        Text(label)
     }
 }
 
