@@ -29,6 +29,7 @@ fun App() {
             NovaKeysNavigation(
                 currentScreen = state.currentScreen,
                 onScreenSelected = appViewModel::selectScreen,
+                storage = storage,
             )
         }
     }

@@ -14,11 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.novakeys.R
+import com.novakeys.storage.AppStorage
 
 @Composable
 fun NovaKeysNavigation(
     currentScreen: AppScreen,
     onScreenSelected: (AppScreen) -> Unit,
+    storage: AppStorage,
 ) {
     Scaffold(
         bottomBar = {
@@ -42,6 +44,7 @@ fun NovaKeysNavigation(
         ScreenContent(
             screen = currentScreen,
             modifier = Modifier.padding(innerPadding),
+            storage = storage,
         )
     }
 }
@@ -56,9 +59,10 @@ private fun screenIcon(screen: AppScreen) = when (screen) {
 private fun ScreenContent(
     screen: AppScreen,
     modifier: Modifier = Modifier,
+    storage: AppStorage,
 ) {
     when (screen) {
-        AppScreen.Home -> HomeScreen(modifier)
+        AppScreen.Home -> HomeScreen(storage = storage, modifier = modifier)
         AppScreen.Library -> LibraryScreen(modifier)
         AppScreen.Settings -> SettingsScreen(modifier)
     }

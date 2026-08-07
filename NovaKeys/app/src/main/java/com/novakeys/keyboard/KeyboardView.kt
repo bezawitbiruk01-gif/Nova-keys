@@ -104,6 +104,20 @@ fun KeyboardSurface(
                         ),
                     )
                 }
+
+                if (state.performance.splitEnabled) {
+                    Box(
+                        modifier = Modifier
+                            .offset(
+                                x = whiteKeyWidth * KeyboardLayout.whiteKeyIndexBefore(
+                                    state.performance.splitPoint,
+                                ),
+                            )
+                            .width(2.dp)
+                            .height(keyboardHeight)
+                            .background(MaterialTheme.colorScheme.tertiary),
+                    )
+                }
             }
         }
     }

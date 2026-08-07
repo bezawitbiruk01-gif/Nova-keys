@@ -18,12 +18,16 @@ interface AudioEngine {
 
     fun noteOff(midiNote: Int)
 
+    fun setSustain(enabled: Boolean)
+
     fun release()
 }
 
 class SimpleAudioEngine : AudioEngine {
     private val voices = ConcurrentHashMap<Int, Voice>()
     private val running = AtomicBoolean(true)
+    @Volatile
+    private var sustainEnabled = false
     private val audioTrack: AudioTrack
     private val audioThread: Thread
 
@@ -65,7 +69,7 @@ class SimpleAudioEngine : AudioEngine {
     }
 
     override fun noteOn(midiNote: Int) {
-        if (midiNote in 21..108 && running.get()) {
+        if (midiNote in 0..127 && running.get()) {
             voices[midiNote] = Voice(
                 midiNote = midiNote,
                 frequency = frequencyForMidiNote(midiNote),
@@ -74,7 +78,21 @@ class SimpleAudioEngine : AudioEngine {
     }
 
     override fun noteOff(midiNote: Int) {
-        voices[midiNote]?.isReleasing = true
+        voices[midiNote]?.let { voice ->
+            voice.isHeld = false
+            if (!sustainEnabled) {
+                voice.isReleasing = true
+            }
+        }
+    }
+
+    override fun setSustain(enabled: Boolean) {
+        sustainEnabled = enabled
+        if (!enabled) {
+            voices.values
+                .filter { !it.isHeld }
+                .forEach { it.isReleasing = true }
+        }
     }
 
     override fun release() {
@@ -134,6 +152,9 @@ class SimpleAudioEngine : AudioEngine {
         var level: Double = INITIAL_LEVEL,
     ) {
         val phaseStep: Double = TWO_PI * frequency / SAMPLE_RATE
+
+        @Volatile
+        var isHeld: Boolean = true
 
         @Volatile
         var isReleasing: Boolean = false
