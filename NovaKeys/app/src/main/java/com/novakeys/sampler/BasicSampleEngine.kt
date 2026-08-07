@@ -7,6 +7,7 @@ import java.io.Closeable
 import java.util.LinkedHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.PI
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -133,11 +134,6 @@ class BasicSampleEngine : SampleEngine, Closeable {
     private fun renderLoop() {
         val buffer = ShortArray(256)
         while (running.get()) {
-            val voiceSnapshot: List<Voice>
-            synchronized(lock) {
-                voiceSnapshot = voices.values.map { it.copy() }
-            }
-
             for (index in buffer.indices) {
                 var sample = 0.0
                 synchronized(lock) {
@@ -149,10 +145,9 @@ class BasicSampleEngine : SampleEngine, Closeable {
                             voice.amplitude *= 0.992
                             if (voice.amplitude < 0.0005) {
                                 iterator.remove()
+                                continue
                             }
                         }
-                    }
-                    voices.values.forEach { voice ->
                         sample += sin(voice.phase) * voice.amplitude
                         voice.phase += (2.0 * PI * voice.frequencyHz) / sampleRate
                         if (voice.phase > 2.0 * PI) voice.phase -= 2.0 * PI
@@ -177,6 +172,6 @@ class BasicSampleEngine : SampleEngine, Closeable {
     }
 
     private fun midiToFrequency(midiNote: Int): Double {
-        return 440.0 * kotlin.math.pow(2.0, (midiNote - 69) / 12.0)
+        return 440.0 * 2.0.pow((midiNote - 69) / 12.0)
     }
 }
