@@ -13,5 +13,9 @@ interface SampleEngine {
 
     fun setPolyphonyLimit(limit: Int)
 
+    fun setSustain(enabled: Boolean)
+
+    fun setMasterVolume(volume: Float)
+
     fun release()
 }
