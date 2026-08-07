@@ -14,6 +14,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -38,6 +40,11 @@ fun HomeScreen(
     )
     val mixerViewModel: MixerViewModel = viewModel()
     val keyboardState by keyboardViewModel.state.collectAsStateWithLifecycle()
+    val mixerState by mixerViewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(mixerState.masterVolume) {
+        keyboardViewModel.setMasterVolume(mixerState.masterVolume)
+    }
 
     Column(
         modifier = modifier
