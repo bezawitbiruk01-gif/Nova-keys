@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.novakeys.sampler.SamplerViewModel
 import com.novakeys.sampler.SamplerViewModelFactory
+import com.novakeys.sampler.SoundFontCatalog
 
 @Composable
 fun SamplerPanel(
@@ -37,8 +38,23 @@ fun SamplerPanel(
         Text(text = "Status: ${if (state.engineReady) "Ready" else "Starting"}")
         Text(text = "Active voices: ${state.activeVoices}/${state.polyphonyLimit}")
         Text(text = "SoundFonts loaded: ${state.loadedSoundFonts.size}")
-        state.loadedSoundFonts.lastOrNull()?.let { soundFont ->
-            Text(text = "Selected: ${soundFont.displayName}")
+        state.selectedSoundFontId?.let { selectedId ->
+            state.loadedSoundFonts.firstOrNull { it.id == selectedId }?.let { soundFont ->
+                Text(text = "Selected: ${soundFont.displayName}")
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(text = "Built-in SoundFonts")
+            SoundFontCatalog.builtInSoundFonts.forEach { soundFont ->
+                Button(
+                    onClick = { viewModel.selectSoundFont(soundFont.id) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(text = soundFont.displayName)
+                }
+                Text(text = soundFont.description)
+            }
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
