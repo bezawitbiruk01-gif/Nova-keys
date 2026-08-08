@@ -145,6 +145,10 @@ class BasicSampleEngine : SampleEngine, Closeable {
         }
     }
 
+    override fun close() {
+        release()
+    }
+
     fun loadDemoSoundFont() {
         loadSoundFont(
             SoundFontInfo(
