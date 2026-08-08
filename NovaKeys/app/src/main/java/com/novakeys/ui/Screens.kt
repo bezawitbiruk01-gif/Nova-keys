@@ -1,5 +1,6 @@
 package com.novakeys.ui
 
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +30,7 @@ import com.novakeys.keyboard.KeyboardState
 import com.novakeys.keyboard.KeyboardViewModel
 import com.novakeys.keyboard.KeyboardViewModelFactory
 import com.novakeys.mixer.MixerViewModel
+import com.novakeys.mixer.MixerViewModelFactory
 import com.novakeys.sampler.SamplerPanel
 import com.novakeys.storage.AppStorage
 
@@ -39,7 +42,9 @@ fun HomeScreen(
     val keyboardViewModel: KeyboardViewModel = viewModel(
         factory = KeyboardViewModelFactory(storage),
     )
-    val mixerViewModel: MixerViewModel = viewModel()
+    val mixerViewModel: MixerViewModel = viewModel(
+        factory = MixerViewModelFactory(LocalContext.current.applicationContext as Application),
+    )
     val keyboardState by keyboardViewModel.state.collectAsStateWithLifecycle()
     val mixerState by mixerViewModel.state.collectAsStateWithLifecycle()
 
