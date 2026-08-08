@@ -2,13 +2,14 @@ package com.novakeys.audio
 
 import com.novakeys.sampler.BasicSampleEngine
 import com.novakeys.sampler.SampleEngine
+import com.novakeys.sampler.SoundFontInfo
 
 class SampleEngineAudioAdapter(
     private val engine: SampleEngine = BasicSampleEngine(),
 ) : AudioEngine {
     init {
         engine.loadSoundFont(
-            com.novakeys.sampler.SoundFontInfo(
+            SoundFontInfo(
                 id = "demo-sine",
                 displayName = "Demo Sine Set",
                 description = "Offline placeholder sound source",
