@@ -7,6 +7,8 @@ interface SampleEngine {
 
     fun loadSoundFont(soundFont: SoundFontInfo)
 
+    fun selectSoundFont(soundFontId: String)
+
     fun noteOn(midiNote: Int, velocity: Int = 100)
 
     fun noteOff(midiNote: Int)
