@@ -14,13 +14,18 @@ class SamplerViewModel(
     val state: StateFlow<SamplerState> = engine.state
 
     init {
-        engine.loadDemoSoundFont()
+        SoundFontCatalog.builtInSoundFonts.forEach(engine::loadSoundFont)
         val restored = storage.readState()
         engine.setPolyphonyLimit(restored.polyphonyLimit)
+        restored.selectedSoundFontId?.let(engine::selectSoundFont)
     }
 
     fun loadDemoSoundFont() {
-        engine.loadDemoSoundFont()
+        selectSoundFont(SoundFontCatalog.defaultSoundFontId())
+    }
+
+    fun selectSoundFont(soundFontId: String) {
+        engine.selectSoundFont(soundFontId)
         storage.writeState(state.value)
     }
 
