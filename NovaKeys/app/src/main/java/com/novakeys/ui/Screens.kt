@@ -4,12 +4,10 @@ import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -31,17 +29,11 @@ import com.novakeys.keyboard.KeyboardViewModel
 import com.novakeys.keyboard.KeyboardViewModelFactory
 import com.novakeys.mixer.MixerViewModel
 import com.novakeys.mixer.MixerViewModelFactory
-import com.novakeys.sampler.SamplerPanel
 import com.novakeys.storage.AppStorage
 
 @Composable
-fun HomeScreen(
-    storage: AppStorage,
-    modifier: Modifier = Modifier,
-) {
-    val keyboardViewModel: KeyboardViewModel = viewModel(
-        factory = KeyboardViewModelFactory(storage),
-    )
+fun HomeScreen(storage: AppStorage, modifier: Modifier = Modifier) {
+    val keyboardViewModel: KeyboardViewModel = viewModel(factory = KeyboardViewModelFactory(storage))
     val mixerViewModel: MixerViewModel = viewModel(
         factory = MixerViewModelFactory(LocalContext.current.applicationContext as Application),
     )
@@ -52,22 +44,15 @@ fun HomeScreen(
         keyboardViewModel.setMasterVolume(mixerState.masterVolume)
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(20.dp),
-    ) {
+    Column(modifier = modifier.fillMaxSize().padding(20.dp)) {
+        Text(stringResource(R.string.home_title), style = MaterialTheme.typography.headlineMedium)
         Text(
-            text = stringResource(R.string.home_title),
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        Text(
-            text = stringResource(R.string.home_message),
+            stringResource(R.string.home_message),
             modifier = Modifier.padding(top = 8.dp),
             style = MaterialTheme.typography.bodyLarge,
         )
         Text(
-            text = stringResource(R.string.developer_name),
+            stringResource(R.string.developer_name),
             modifier = Modifier.padding(top = 4.dp, bottom = 20.dp),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.primary,
@@ -82,14 +67,12 @@ fun HomeScreen(
             onSaveRegistration = keyboardViewModel::saveRegistration,
             onLoadRegistration = keyboardViewModel::loadRegistration,
         )
-        MixerPanel(viewModel = mixerViewModel)
+        MixerPanel(mixerViewModel)
         KeyboardSurface(
             state = keyboardState,
             onNoteOn = keyboardViewModel::noteOn,
             onNoteOff = keyboardViewModel::noteOff,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+            modifier = Modifier.weight(1f).fillMaxWidth(),
         )
     }
 }
@@ -106,108 +89,41 @@ private fun PerformanceControls(
     onLoadRegistration: (Int) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 12.dp),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            FilterChip(
-                selected = state.performance.splitEnabled,
-                onClick = { onSplitChanged(!state.performance.splitEnabled) },
-                label = { Text("Split") },
-            )
-            FilterChip(
-                selected = state.performance.layerEnabled,
-                onClick = { onLayerChanged(!state.performance.layerEnabled) },
-                label = { Text("Layer") },
-            )
-            FilterChip(
-                selected = state.performance.sustainEnabled,
-                onClick = { onSustainChanged(!state.performance.sustainEnabled) },
-                label = { Text("Sustain") },
-            )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            FilterChip(state.performance.splitEnabled, { onSplitChanged(!state.performance.splitEnabled) }, label = { Text("Split") })
+            FilterChip(state.performance.layerEnabled, { onLayerChanged(!state.performance.layerEnabled) }, label = { Text("Layer") })
+            FilterChip(state.performance.sustainEnabled, { onSustainChanged(!state.performance.sustainEnabled) }, label = { Text("Sustain") })
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(
-                text = "Transpose ${state.performance.transpose}",
-                style = MaterialTheme.typography.labelMedium,
-            )
+            Text("Transpose ${state.performance.transpose}", style = MaterialTheme.typography.labelMedium)
             Button(onClick = { onTransposeChanged(-1) }) { Text("−") }
             Button(onClick = { onTransposeChanged(1) }) { Text("+") }
-            Text(
-                text = "Split ${state.performance.splitPoint}",
-                style = MaterialTheme.typography.labelMedium,
-            )
-            Button(onClick = { onSplitPointChanged(state.performance.splitPoint - 1) }) {
-                Text("−")
-            }
-            Button(onClick = { onSplitPointChanged(state.performance.splitPoint + 1) }) {
-                Text("+")
-            }
+            Text("Split ${state.performance.splitPoint}", style = MaterialTheme.typography.labelMedium)
+            Button(onClick = { onSplitPointChanged(state.performance.splitPoint - 1) }) { Text("−") }
+            Button(onClick = { onSplitPointChanged(state.performance.splitPoint + 1) }) { Text("+") }
         }
-        Text(
-            text = "Chord: ${state.chordName}",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            RegistrationButtonRow(
-                label = "Load 1",
-                onClick = { onLoadRegistration(1) },
-                modifier = Modifier.weight(1f),
-            )
-            RegistrationButtonRow(
-                label = "Save 1",
-                onClick = { onSaveRegistration(1) },
-                modifier = Modifier.weight(1f),
-            )
-            RegistrationButtonRow(
-                label = "Load 2",
-                onClick = { onLoadRegistration(2) },
-                modifier = Modifier.weight(1f),
-            )
-            RegistrationButtonRow(
-                label = "Save 2",
-                onClick = { onSaveRegistration(2) },
-                modifier = Modifier.weight(1f),
-            )
-            RegistrationButtonRow(
-                label = "Load 3",
-                onClick = { onLoadRegistration(3) },
-                modifier = Modifier.weight(1f),
-            )
-            RegistrationButtonRow(
-                label = "Save 3",
-                onClick = { onSaveRegistration(3) },
-                modifier = Modifier.weight(1f),
-            )
+        Text("Chord: ${state.chordName}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            RegistrationButtonRow("Load 1", { onLoadRegistration(1) }, Modifier.weight(1f))
+            RegistrationButtonRow("Save 1", { onSaveRegistration(1) }, Modifier.weight(1f))
+            RegistrationButtonRow("Load 2", { onLoadRegistration(2) }, Modifier.weight(1f))
+            RegistrationButtonRow("Save 2", { onSaveRegistration(2) }, Modifier.weight(1f))
+            RegistrationButtonRow("Load 3", { onLoadRegistration(3) }, Modifier.weight(1f))
+            RegistrationButtonRow("Save 3", { onSaveRegistration(3) }, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun RowScope.RegistrationButtonRow(
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier,
-    ) {
-        Text(label)
-    }
+private fun RowScope.RegistrationButtonRow(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Button(onClick = onClick, modifier = modifier) { Text(label) }
 }
 
 @Composable
@@ -223,38 +139,23 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
-    BaseScreen(
-        modifier = modifier,
-        title = stringResource(R.string.settings_title),
-        message = stringResource(R.string.settings_message),
-    )
-}
+fun SettingsScreen(modifier: Modifier = Modifier) = BaseScreen(
+    modifier = modifier,
+    title = stringResource(R.string.settings_title),
+    message = stringResource(R.string.settings_message),
+)
 
 @Composable
-private fun BaseScreen(
-    modifier: Modifier,
-    title: String,
-    message: String,
-) {
+private fun BaseScreen(modifier: Modifier, title: String, message: String) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        Text(title, style = MaterialTheme.typography.headlineMedium)
+        Text(message, modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.bodyLarge)
         Text(
-            text = title,
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        Text(
-            text = message,
-            modifier = Modifier.padding(top = 12.dp),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Text(
-            text = stringResource(R.string.developer_name),
+            stringResource(R.string.developer_name),
             modifier = Modifier.padding(top = 16.dp),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.primary,
