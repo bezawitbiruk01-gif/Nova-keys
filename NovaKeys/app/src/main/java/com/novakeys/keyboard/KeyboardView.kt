@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitPointerEventScope
+import androidx.compose.foundation.gestures.awaitPointerEvent
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.consume
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -46,9 +45,7 @@ fun KeyboardSurface(
             text = if (state.activeNotes.isEmpty()) {
                 "Tap a key to play"
             } else {
-                state.activeNotes
-                    .sorted()
-                    .joinToString(separator = " · ") { midiNoteLabel(it) }
+                state.activeNotes.sorted().joinToString(" · ") { midiNoteLabel(it) }
             },
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -66,11 +63,7 @@ fun KeyboardSurface(
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = RoundedCornerShape(12.dp),
-                    ),
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp)),
             ) {
                 Row(modifier = Modifier.fillMaxSize()) {
                     KeyboardLayout.whiteKeys.forEach { key ->
@@ -87,7 +80,6 @@ fun KeyboardSurface(
                         )
                     }
                 }
-
                 KeyboardLayout.blackKeys.forEach { key ->
                     PianoKey(
                         key = key,
@@ -105,7 +97,6 @@ fun KeyboardSurface(
                         ),
                     )
                 }
-
                 if (state.performance.splitEnabled) {
                     Box(
                         modifier = Modifier
@@ -166,22 +157,16 @@ private fun Modifier.noteTouch(
     onNoteOff: (Int) -> Unit,
 ): Modifier = pointerInput(midiNote) {
     awaitEachGesture {
-        awaitPointerEventScope {
-            val down = awaitFirstDown(requireUnconsumed = false)
-            onNoteOn(midiNote)
-            try {
-                while (true) {
-                    val event = awaitPointerEvent()
-                    val change = event.changes.firstOrNull { it.id == down.id }
-                        ?: break
-                    if (!change.pressed) {
-                        break
-                    }
-                    change.consume()
-                }
-            } finally {
-                onNoteOff(midiNote)
+        val down = awaitFirstDown(requireUnconsumed = false)
+        onNoteOn(midiNote)
+        try {
+            while (true) {
+                val event = awaitPointerEvent()
+                val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                if (!change.pressed) break
             }
+        } finally {
+            onNoteOff(midiNote)
         }
     }
 }
@@ -191,5 +176,5 @@ private fun midiNoteLabel(midiNote: Int): String {
         "C", "C♯", "D", "D♯", "E", "F",
         "F♯", "G", "G♯", "A", "A♯", "B",
     )
-    return "${pitchNames[midiNote % 12]}${midiNote / 12 - 1}"
+    return "${pitchNames[midiNote.mod(12)]}${midiNote / 12 - 1}"
 }
