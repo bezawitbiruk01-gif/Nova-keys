@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitPointerEvent
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.awaitPointerEvent
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -42,11 +42,8 @@ fun KeyboardSurface(
 
     Column(modifier = modifier) {
         Text(
-            text = if (state.activeNotes.isEmpty()) {
-                "Tap a key to play"
-            } else {
-                state.activeNotes.sorted().joinToString(" · ") { midiNoteLabel(it) }
-            },
+            text = if (state.activeNotes.isEmpty()) "Tap a key to play"
+            else state.activeNotes.sorted().joinToString(" · ") { midiNoteLabel(it) },
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp),
@@ -101,9 +98,7 @@ fun KeyboardSurface(
                     Box(
                         modifier = Modifier
                             .offset(
-                                x = whiteKeyWidth * KeyboardLayout.whiteKeyIndexBefore(
-                                    state.performance.splitPoint,
-                                ),
+                                x = whiteKeyWidth * KeyboardLayout.whiteKeyIndexBefore(state.performance.splitPoint),
                             )
                             .width(2.dp)
                             .height(keyboardHeight)
@@ -172,9 +167,6 @@ private fun Modifier.noteTouch(
 }
 
 private fun midiNoteLabel(midiNote: Int): String {
-    val pitchNames = listOf(
-        "C", "C♯", "D", "D♯", "E", "F",
-        "F♯", "G", "G♯", "A", "A♯", "B",
-    )
+    val pitchNames = listOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")
     return "${pitchNames[midiNote.mod(12)]}${midiNote / 12 - 1}"
 }
