@@ -34,11 +34,16 @@ data class KeyboardKey(
 object KeyboardLayout {
     const val FIRST_MIDI_NOTE = 21
     const val LAST_MIDI_NOTE = 108
+    private val blackPitchClasses = setOf(1, 3, 6, 8, 10)
+    private val pitchNames = listOf(
+        "C", "C♯", "D", "D♯", "E", "F",
+        "F♯", "G", "G♯", "A", "A♯", "B",
+    )
 
     val keys: List<KeyboardKey> = (FIRST_MIDI_NOTE..LAST_MIDI_NOTE).map { midiNote ->
         KeyboardKey(
             midiNote = midiNote,
-            isBlack = midiNote % 12 in BLACK_PITCH_CLASSES,
+            isBlack = midiNote % 12 in blackPitchClasses,
             label = noteLabel(midiNote),
         )
     }
@@ -46,20 +51,13 @@ object KeyboardLayout {
     val whiteKeys: List<KeyboardKey> = keys.filterNot(KeyboardKey::isBlack)
     val blackKeys: List<KeyboardKey> = keys.filter(KeyboardKey::isBlack)
 
-    fun whiteKeyIndexBefore(midiNote: Int): Int {
-        return keys.takeWhile { it.midiNote < midiNote }.count { !it.isBlack }
-    }
+    fun whiteKeyIndexBefore(midiNote: Int): Int =
+        keys.takeWhile { it.midiNote < midiNote }.count { !it.isBlack }
 
     private fun noteLabel(midiNote: Int): String {
         val octave = (midiNote / 12) - 1
-        return "${PITCH_NAMES[midiNote % 12]}$octave"
+        return "${pitchNames[midiNote % 12]}$octave"
     }
-
-    private val BLACK_PITCH_CLASSES = setOf(1, 3, 6, 8, 10)
-    private val PITCH_NAMES = listOf(
-        "C", "C♯", "D", "D♯", "E", "F",
-        "F♯", "G", "G♯", "A", "A♯", "B",
-    )
 }
 
 class KeyboardViewModel(
@@ -82,16 +80,12 @@ class KeyboardViewModel(
     }
 
     fun noteOn(midiNote: Int) {
-        if (midiNote in mutableState.value.activeNotes) {
-            return
-        }
+        if (midiNote in mutableState.value.activeNotes) return
         val soundingNotes = soundingNotesFor(midiNote)
         soundingNotesByKey[midiNote] = soundingNotes
         soundingNotes.forEach { note ->
             val owners = soundingNoteOwners[note] ?: 0
-            if (owners == 0) {
-                audioEngine.noteOn(note)
-            }
+            if (owners == 0) audioEngine.noteOn(note)
             soundingNoteOwners[note] = owners + 1
         }
         updateState {
@@ -121,32 +115,22 @@ class KeyboardViewModel(
         }
     }
 
-    fun setSplitEnabled(enabled: Boolean) {
-        updatePerformance { copy(splitEnabled = enabled) }
-    }
+    fun setSplitEnabled(enabled: Boolean) = updatePerformance { copy(splitEnabled = enabled) }
 
-    fun setSplitPoint(point: Int) {
+    fun setSplitPoint(point: Int) =
         updatePerformance { copy(splitPoint = point.coerceIn(36, 84)) }
-    }
 
-    fun setLayerEnabled(enabled: Boolean) {
-        updatePerformance { copy(layerEnabled = enabled) }
-    }
+    fun setLayerEnabled(enabled: Boolean) = updatePerformance { copy(layerEnabled = enabled) }
 
-    fun transposeBy(amount: Int) {
-        updatePerformance {
-            copy(transpose = (transpose + amount).coerceIn(-12, 12))
-        }
-    }
+    fun transposeBy(amount: Int) =
+        updatePerformance { copy(transpose = (transpose + amount).coerceIn(-12, 12)) }
 
     fun setSustainEnabled(enabled: Boolean) {
         audioEngine.setSustain(enabled)
         updatePerformance { copy(sustainEnabled = enabled) }
     }
 
-    fun setMasterVolume(volume: Float) {
-        audioEngine.setMasterVolume(volume)
-    }
+    fun setMasterVolume(volume: Float) = audioEngine.setMasterVolume(volume)
 
     fun saveRegistration(slot: Int) {
         val validSlot = slot.coerceIn(1, 3)
@@ -181,27 +165,19 @@ class KeyboardViewModel(
 
     private fun soundingNotesFor(midiNote: Int): List<Int> {
         val performance = mutableState.value.performance
-        val splitOffset = if (performance.splitEnabled && midiNote < performance.splitPoint) {
-            -12
-        } else {
-            0
-        }
-        val transposedNote = (midiNote + performance.transpose + splitOffset)
-            .coerceIn(0, 127)
+        val splitOffset = if (performance.splitEnabled && midiNote < performance.splitPoint) -12 else 0
+        val transposedNote = (midiNote + performance.transpose + splitOffset).coerceIn(0, 127)
         val layerNote = (transposedNote + 12).coerceAtMost(127)
         val layerApplies = performance.layerEnabled &&
             (!performance.splitEnabled || midiNote >= performance.splitPoint)
-        return if (layerApplies) {
-            listOf(transposedNote, layerNote).distinct()
-        } else {
-            listOf(transposedNote)
-        }
+        return if (layerApplies) listOf(transposedNote, layerNote).distinct() else listOf(transposedNote)
     }
 
     private fun updatePerformance(transform: PerformanceState.() -> PerformanceState) {
-        val updatedPerformance = mutableState.value.performance.transform()
+        val oldPerformance = mutableState.value.performance
+        val updatedPerformance = oldPerformance.transform()
         storage.writePerformanceState(updatedPerformance)
-        if (updatedPerformance.sustainEnabled != mutableState.value.performance.sustainEnabled) {
+        if (updatedPerformance.sustainEnabled != oldPerformance.sustainEnabled) {
             audioEngine.setSustain(updatedPerformance.sustainEnabled)
         }
         updateState { copy(performance = updatedPerformance) }
@@ -212,10 +188,7 @@ class KeyboardViewModel(
     }
 
     private fun stopActiveNotes() {
-        soundingNotesByKey.values
-            .flatten()
-            .distinct()
-            .forEach(audioEngine::noteOff)
+        soundingNotesByKey.values.flatten().distinct().forEach(audioEngine::noteOff)
         soundingNotesByKey.clear()
         soundingNoteOwners.clear()
     }
@@ -234,10 +207,13 @@ class KeyboardViewModelFactory(
 }
 
 object ChordDetector {
+    private val pitchNames = listOf(
+        "C", "C♯", "D", "D♯", "E", "F",
+        "F♯", "G", "G♯", "A", "A♯", "B",
+    )
+
     fun detect(midiNotes: Set<Int>): String {
-        if (midiNotes.size < 2) {
-            return "—"
-        }
+        if (midiNotes.size < 2) return "—"
         val pitchClasses = midiNotes.map { it.mod(12) }.toSet()
         val orderedRoots = midiNotes.sorted().map { it.mod(12) }.distinct()
         orderedRoots.forEach { root ->
@@ -250,15 +226,8 @@ object ChordDetector {
                 intervals.containsAll(setOf(0, 4, 7, 10)) -> "7"
                 else -> null
             }
-            if (quality != null) {
-                return "${PITCH_NAMES[root]} $quality"
-            }
+            if (quality != null) return "${pitchNames[root]} $quality"
         }
         return "Notes"
     }
-
-    private val PITCH_NAMES = listOf(
-        "C", "C♯", "D", "D♯", "E", "F",
-        "F♯", "G", "G♯", "A", "A♯", "B",
-    )
 }
