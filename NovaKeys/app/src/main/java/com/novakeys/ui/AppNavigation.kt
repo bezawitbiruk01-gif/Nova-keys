@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -20,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import com.novakeys.R
 import com.novakeys.storage.AppStorage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NovaKeysNavigation(
     currentScreen: AppScreen,
