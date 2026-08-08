@@ -37,6 +37,8 @@ class BasicSampleEngine : SampleEngine, Closeable {
     private var sustainEnabled: Boolean = false
     @Volatile
     private var masterVolume: Float = 0.8f
+    @Volatile
+    private var selectedSoundFontId: String? = null
     private val sampleRate = 44_100
     private val audioTrack: AudioTrack
     private val audioThread: Thread
@@ -77,6 +79,18 @@ class BasicSampleEngine : SampleEngine, Closeable {
         synchronized(lock) {
             if (loadedSoundFonts.none { it.id == soundFont.id }) {
                 loadedSoundFonts += soundFont
+                if (selectedSoundFontId == null) {
+                    selectedSoundFontId = soundFont.id
+                }
+                updateState()
+            }
+        }
+    }
+
+    override fun selectSoundFont(soundFontId: String) {
+        synchronized(lock) {
+            if (loadedSoundFonts.any { it.id == soundFontId }) {
+                selectedSoundFontId = soundFontId
                 updateState()
             }
         }
@@ -197,7 +211,7 @@ class BasicSampleEngine : SampleEngine, Closeable {
             polyphonyLimit = polyphonyLimit,
             activeVoices = synchronized(lock) { voices.size },
             loadedSoundFonts = loadedSoundFonts.toList(),
-            selectedSoundFontId = loadedSoundFonts.lastOrNull()?.id,
+            selectedSoundFontId = selectedSoundFontId ?: loadedSoundFonts.firstOrNull()?.id,
         )
     }
 
